@@ -1,11 +1,13 @@
+// src/components/forms/MessageForm.tsx
+
 import React from 'react';
 import Dropdown from './Dropdown';
-
 import { DateInput } from './DateInput';
-import MessagesTable from '../table/MessagesTable';
 import useMessageForm from '@/app/hooks/useMessageForm';
 
-const MessageForm: React.FC = () => {
+const MessageForm: React.FC<{
+  onMessagesFetched: (messages: any[]) => void;
+}> = ({ onMessagesFetched }) => {
   const {
     formData,
     handleChange,
@@ -16,11 +18,17 @@ const MessageForm: React.FC = () => {
     error,
   } = useMessageForm();
 
+  const handleFormSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    await handleSubmit(event);
+    onMessagesFetched(messages);
+  };
+
   return (
     <div className='flex justify-center items-start w-full'>
       <section className='bg-white shadow-md rounded-lg p-6 w-full max-w-4xl'>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleFormSubmit}
           className='flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-4'
         >
           <div className='flex-1'>
@@ -61,7 +69,6 @@ const MessageForm: React.FC = () => {
           </button>
         </form>
         {error && <p className='mt-4 text-red-500'>{error}</p>}
-        <MessagesTable messages={messages} />
       </section>
     </div>
   );
