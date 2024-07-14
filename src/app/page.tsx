@@ -17,7 +17,7 @@ export default function Home() {
     <div className='p-4'>
       <div className='flex flex-col items-center space-y-8'>
         <MessageForm onMessagesFetched={handleMessagesFetched} />
-        <div className='mt-24 w-full'>
+        <div className='mt-10 w-full'>
           <MessagesTable messages={messages} />
         </div>
       </div>

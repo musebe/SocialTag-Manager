@@ -17,7 +17,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({ messages }) => {
             </h1>
             <p className='mt-2 text-sm text-gray-700'>
               A list of all the messages in your account including their posted
-              date, campaign, network, message, and tags.
+              date, network, message, and tags.
             </p>
           </div>
         </div>

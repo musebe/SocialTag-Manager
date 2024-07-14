@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import useFetchCampaigns from './useFetchCampaigns';
 import { fetchMessagesByCampaignId } from '@/lib/api/oktopostApi';
+import { useToast } from './useToast';
 
 const useMessageForm = () => {
     const { campaigns, error: campaignsError } = useFetchCampaigns();
@@ -12,7 +13,8 @@ const useMessageForm = () => {
     });
     const [messages, setMessages] = useState<any[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [shouldFetchMessages, setShouldFetchMessages] = useState(false);
+    const [isFetching, setIsFetching] = useState(false);
+    const { showSuccess, showError, showInfo, dismiss } = useToast();
 
     const handleChange = (field: string) => (value: string) => {
         setFormData({ ...formData, [field]: value });
@@ -22,35 +24,34 @@ const useMessageForm = () => {
         setFormData({ ...formData, [field]: date });
     };
 
-    const handleSubmit = (event: React.FormEvent) => {
+    const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        setShouldFetchMessages(true);
+        setIsFetching(true);
+        showInfo('Fetching messages...');
+        try {
+            const messages = await fetchMessagesByCampaignId(
+                formData.campaign,
+                formData.network,
+                formData.fromDate?.toISOString() || '',
+                formData.toDate?.toISOString() || ''
+            );
+            setMessages(messages);
+            dismiss();
+            showSuccess('Messages fetched successfully');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unknown error occurred');
+            dismiss();
+            showError('Failed to fetch messages', err instanceof Error ? err.message : undefined);
+        } finally {
+            setIsFetching(false);
+        }
     };
 
     useEffect(() => {
-        if (shouldFetchMessages) {
-            const fetchMessages = async () => {
-                try {
-                    const messages = await fetchMessagesByCampaignId(
-                        formData.campaign,
-                        formData.network,
-                        formData.fromDate?.toISOString() || '',
-                        formData.toDate?.toISOString() || ''
-                    );
-                    setMessages(messages);
-                    setShouldFetchMessages(false);
-                } catch (err) {
-                    if (err instanceof Error) {
-                        setError(err.message);
-                    } else {
-                        setError('An unknown error occurred');
-                    }
-                    setShouldFetchMessages(false);
-                }
-            };
-            fetchMessages();
+        if (campaignsError) {
+            setError(campaignsError);
         }
-    }, [shouldFetchMessages, formData.campaign, formData.network, formData.fromDate, formData.toDate]);
+    }, [campaignsError]);
 
     const options = {
         campaigns: campaigns.map((c) => ({ value: c.Id, label: c.Name })),
@@ -61,7 +62,7 @@ const useMessageForm = () => {
         ],
     };
 
-    return { formData, handleChange, handleDateChange, handleSubmit, options, messages, error };
+    return { formData, handleChange, handleDateChange, handleSubmit, options, messages, error, isFetching };
 };
 
 export default useMessageForm;
