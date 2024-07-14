@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import useFetchCampaigns from './useFetchCampaigns';
-import { fetchMessagesByCampaignId } from '@/lib/api/oktopostApi';
+import useFetchMessagesByCampaignId from './useFetchMessagesByCampaignId';
 import { useToast } from './useToast';
 
 const useMessageForm = () => {
@@ -11,10 +11,22 @@ const useMessageForm = () => {
         fromDate: null as Date | null,
         toDate: null as Date | null,
     });
-    const [messages, setMessages] = useState<any[]>([]);
-    const [error, setError] = useState<string | null>(null);
     const [isFetching, setIsFetching] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const { showSuccess, showError, showInfo, dismiss } = useToast();
+
+    const { messages, error: fetchMessagesError, setShouldFetch } = useFetchMessagesByCampaignId(
+        formData.campaign,
+        formData.network,
+        formData.fromDate?.toISOString() || '',
+        formData.toDate?.toISOString() || ''
+    );
+
+    useEffect(() => {
+        if (fetchMessagesError) {
+            setError(fetchMessagesError);
+        }
+    }, [fetchMessagesError]);
 
     const handleChange = (field: string) => (value: string) => {
         setFormData({ ...formData, [field]: value });
@@ -26,20 +38,22 @@ const useMessageForm = () => {
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
+        if (!formData.campaign || !formData.network || !formData.fromDate || !formData.toDate) {
+            setError('All fields are required');
+            console.log('Form data missing:', formData); // Add logging
+            return;
+        }
+
         setIsFetching(true);
         showInfo('Fetching messages...');
+        console.log('Form data submitted:', formData); // Add logging
         try {
-            const messages = await fetchMessagesByCampaignId(
-                formData.campaign,
-                formData.network,
-                formData.fromDate?.toISOString() || '',
-                formData.toDate?.toISOString() || ''
-            );
-            setMessages(messages);
+            setShouldFetch(true); // Trigger the fetch
+            setTimeout(() => { setShouldFetch(false); }, 0); // Prevent immediate re-triggering
+            setIsFetching(false);
             dismiss();
             showSuccess('Messages fetched successfully');
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'An unknown error occurred');
             dismiss();
             showError('Failed to fetch messages', err instanceof Error ? err.message : undefined);
         } finally {
@@ -59,6 +73,8 @@ const useMessageForm = () => {
             { value: 'LinkedIn', label: 'LinkedIn' },
             { value: 'Facebook', label: 'Facebook' },
             { value: 'Twitter', label: 'Twitter' },
+            { value: 'Instagram', label: 'Instagram' },
+            // Add any other networks as needed
         ],
     };
 

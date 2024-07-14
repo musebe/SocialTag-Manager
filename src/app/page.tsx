@@ -8,9 +8,11 @@ import MessagesTable from '@/components/table/MessagesTable';
 
 export default function Home() {
   const [messages, setMessages] = useState<any[]>([]);
+  const [selectedNetwork, setSelectedNetwork] = useState<string>(''); // Add state for selected network
 
-  const handleMessagesFetched = (fetchedMessages: any[]) => {
+  const handleMessagesFetched = (fetchedMessages: any[], network: string) => {
     setMessages(fetchedMessages);
+    setSelectedNetwork(network); // Set selected network
   };
 
   return (
@@ -18,7 +20,11 @@ export default function Home() {
       <div className='flex flex-col items-center space-y-8'>
         <MessageForm onMessagesFetched={handleMessagesFetched} />
         <div className='mt-10 w-full'>
-          <MessagesTable messages={messages} />
+          <MessagesTable
+            messages={messages}
+            selectedNetwork={selectedNetwork}
+          />{' '}
+          {/* Pass selectedNetwork */}
         </div>
       </div>
     </div>

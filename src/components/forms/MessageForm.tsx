@@ -1,10 +1,14 @@
+// src/components/forms/MessageForm.tsx
+
+'use client';
+
 import React, { useEffect } from 'react';
 import Dropdown from './Dropdown';
 import { DateInput } from './DateInput';
 import useMessageForm from '@/app/hooks/useMessageForm';
 
 const MessageForm: React.FC<{
-  onMessagesFetched: (messages: any[]) => void;
+  onMessagesFetched: (messages: any[], network: string) => void; // Update the prop type
 }> = ({ onMessagesFetched }) => {
   const {
     formData,
@@ -19,9 +23,9 @@ const MessageForm: React.FC<{
 
   useEffect(() => {
     if (messages.length > 0) {
-      onMessagesFetched(messages);
+      onMessagesFetched(messages, formData.network); // Pass the network as well
     }
-  }, [messages, onMessagesFetched]);
+  }, [messages, onMessagesFetched, formData.network]);
 
   const handleFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -79,4 +83,5 @@ const MessageForm: React.FC<{
   );
 };
 
-export default MessageForm;
+export default MessageForm;        
+     

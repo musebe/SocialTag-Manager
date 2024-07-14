@@ -15,16 +15,18 @@ const axiosConfig = {
 };
 
 const handleResponse = (response: any) => {
-    console.log('API response:', response.data);
+    console.log('API response status:', response.status, '- Message:', response.data.Message || 'No message');
+    console.log('API response data:', response.data); // Add this line to log response data
     return response.data.Result
         ? response.data.Items || response.data.Message || []
         : [];
 };
 
+
 const handleError = (error: any, message: string) => {
-    console.error(message, error.response ? error.response.data : error.message);
+    console.error(message, error.response ? `Status: ${error.response.status} - Data: ${error.response.data}` : error.message);
     if (error.response) {
-        console.error('API Response Data:', error.response.data);
+        console.error('API Response Status:', error.response.status);
     }
     throw new Error(message);
 };
