@@ -1,5 +1,3 @@
-// src/components/forms/MessageForm.tsx
-
 'use client';
 
 import React, { useEffect } from 'react';
@@ -8,7 +6,7 @@ import { DateInput } from './DateInput';
 import useMessageForm from '@/app/hooks/useMessageForm';
 
 const MessageForm: React.FC<{
-  onMessagesFetched: (messages: any[], network: string) => void; // Update the prop type
+  onMessagesFetched: (messages: any[], network: string) => void;
 }> = ({ onMessagesFetched }) => {
   const {
     formData,
@@ -23,9 +21,9 @@ const MessageForm: React.FC<{
 
   useEffect(() => {
     if (messages.length > 0) {
-      onMessagesFetched(messages, formData.network); // Pass the network as well
+      onMessagesFetched(messages, formData.network);
     }
-  }, [messages, onMessagesFetched, formData.network]);
+  }, [messages, formData.network, onMessagesFetched]);
 
   const handleFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -74,7 +72,7 @@ const MessageForm: React.FC<{
             className='bg-blue-500 text-white px-4 py-2 rounded shadow'
             disabled={isFetching}
           >
-            {isFetching ? 'Fetching...' : 'Fetch Messages'}
+            {isFetching ? 'Fetching messages...' : 'Fetch Messages'}
           </button>
         </form>
         {error && <p className='mt-4 text-red-500'>{error}</p>}
@@ -83,5 +81,4 @@ const MessageForm: React.FC<{
   );
 };
 
-export default MessageForm;        
-     
+export default MessageForm;

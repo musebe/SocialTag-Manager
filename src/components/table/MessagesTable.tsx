@@ -4,25 +4,20 @@ import TableRow from './TableRow';
 
 interface MessagesTableProps {
   messages: any[];
-  selectedNetwork: string; // Add this prop to filter by network
+  selectedNetwork: string; // Add selectedNetwork to the props
 }
 
 const MessagesTable: React.FC<MessagesTableProps> = ({
   messages,
   selectedNetwork,
 }) => {
-  // Filter messages based on the selected network
-  const filteredMessages = messages.filter(
-    (message) => message.Network === selectedNetwork
-  );
-
   return (
     <div className='flex justify-center items-start w-full mt-24'>
       <div className='px-4 sm:px-6 lg:px-8 w-full max-w-7xl'>
         <div className='sm:flex sm:items-center'>
           <div className='sm:flex-auto'>
             <h1 className='text-base font-semibold leading-6 text-gray-900'>
-              Messages
+              Messages for {selectedNetwork}
             </h1>
             <p className='mt-2 text-sm text-gray-700'>
               A list of all the messages in your account including their posted
@@ -37,7 +32,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
                 <table className='min-w-full divide-y divide-gray-300'>
                   <TableHeader />
                   <tbody className='divide-y divide-gray-200 bg-white'>
-                    {filteredMessages.map((message) => (
+                    {messages.map((message) => (
                       <TableRow key={message.Id} message={message} />
                     ))}
                   </tbody>

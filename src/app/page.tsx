@@ -1,5 +1,3 @@
-// src/app/page.tsx
-
 'use client';
 
 import { useState } from 'react';
@@ -8,11 +6,11 @@ import MessagesTable from '@/components/table/MessagesTable';
 
 export default function Home() {
   const [messages, setMessages] = useState<any[]>([]);
-  const [selectedNetwork, setSelectedNetwork] = useState<string>(''); // Add state for selected network
+  const [selectedNetwork, setSelectedNetwork] = useState<string>('');
 
   const handleMessagesFetched = (fetchedMessages: any[], network: string) => {
     setMessages(fetchedMessages);
-    setSelectedNetwork(network); // Set selected network
+    setSelectedNetwork(network);
   };
 
   return (
@@ -23,8 +21,7 @@ export default function Home() {
           <MessagesTable
             messages={messages}
             selectedNetwork={selectedNetwork}
-          />{' '}
-          {/* Pass selectedNetwork */}
+          />
         </div>
       </div>
     </div>

@@ -28,6 +28,12 @@ const useMessageForm = () => {
         }
     }, [fetchMessagesError]);
 
+    useEffect(() => {
+        if (campaignsError) {
+            setError(campaignsError);
+        }
+    }, [campaignsError]);
+
     const handleChange = (field: string) => (value: string) => {
         setFormData({ ...formData, [field]: value });
     };
@@ -40,32 +46,27 @@ const useMessageForm = () => {
         event.preventDefault();
         if (!formData.campaign || !formData.network || !formData.fromDate || !formData.toDate) {
             setError('All fields are required');
-            console.log('Form data missing:', formData); // Add logging
+            console.log('Form data missing:', formData);
             return;
         }
 
         setIsFetching(true);
+        dismiss(); // Ensure any previous toasts are dismissed
         showInfo('Fetching messages...');
-        console.log('Form data submitted:', formData); // Add logging
+        console.log('Form data submitted:', formData);
         try {
-            setShouldFetch(true); // Trigger the fetch
-            setTimeout(() => { setShouldFetch(false); }, 0); // Prevent immediate re-triggering
-            setIsFetching(false);
-            dismiss();
+            setShouldFetch(true);
+            // Use a timeout to allow setShouldFetch to trigger
+            setTimeout(() => setShouldFetch(false), 0);
+            dismiss(); // Dismiss the fetching info toast
             showSuccess('Messages fetched successfully');
         } catch (err) {
-            dismiss();
+            dismiss(); // Dismiss the fetching info toast
             showError('Failed to fetch messages', err instanceof Error ? err.message : undefined);
         } finally {
             setIsFetching(false);
         }
     };
-
-    useEffect(() => {
-        if (campaignsError) {
-            setError(campaignsError);
-        }
-    }, [campaignsError]);
 
     const options = {
         campaigns: campaigns.map((c) => ({ value: c.Id, label: c.Name })),
@@ -74,7 +75,6 @@ const useMessageForm = () => {
             { value: 'Facebook', label: 'Facebook' },
             { value: 'Twitter', label: 'Twitter' },
             { value: 'Instagram', label: 'Instagram' },
-            // Add any other networks as needed
         ],
     };
 
