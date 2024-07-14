@@ -13,7 +13,7 @@ const useMessageForm = () => {
     });
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { showSuccess, showError, showInfo, dismiss } = useToast();
+    const { showSuccess, showError, dismiss } = useToast();
 
     const { messages, error: fetchMessagesError, setShouldFetch } = useFetchMessagesByCampaignId(
         formData.campaign,
@@ -52,16 +52,13 @@ const useMessageForm = () => {
 
         setIsFetching(true);
         dismiss(); // Ensure any previous toasts are dismissed
-        showInfo('Fetching messages...');
         console.log('Form data submitted:', formData);
         try {
             setShouldFetch(true);
             // Use a timeout to allow setShouldFetch to trigger
             setTimeout(() => setShouldFetch(false), 0);
-            dismiss(); // Dismiss the fetching info toast
             showSuccess('Messages fetched successfully');
         } catch (err) {
-            dismiss(); // Dismiss the fetching info toast
             showError('Failed to fetch messages', err instanceof Error ? err.message : undefined);
         } finally {
             setIsFetching(false);

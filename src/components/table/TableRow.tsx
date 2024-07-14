@@ -8,12 +8,26 @@ interface TableRowProps {
     Created: string;
     Network: string;
     Message: string;
-    Tags: string[];
+    Tags: { Id: string; Tag: string }[];
   };
 }
 
 const TableRow: React.FC<TableRowProps> = ({ message }) => {
   const [open, setOpen] = useState(false);
+
+  const colors = [
+    'bg-green-100 text-green-800',
+    'bg-yellow-100 text-yellow-800',
+    'bg-blue-100 text-blue-800',
+    'bg-purple-100 text-purple-800',
+    'bg-red-100 text-red-800',
+    'bg-gray-100 text-gray-800',
+  ];
+
+  const getTagColor = (tag: string) => {
+    const index = colors.length; // A simplified version to just cycle through colors
+    return colors[index % colors.length];
+  };
 
   return (
     <>
@@ -34,9 +48,17 @@ const TableRow: React.FC<TableRowProps> = ({ message }) => {
         </td>
         <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>
           <div className='flex flex-wrap gap-1'>
-            {message.Tags.slice(0, 6).map((tag) => (
-              <Tag key={tag} text={tag} />
-            ))}
+            {message.Tags.length > 0 ? (
+              message.Tags.slice(0, 6).map((tag) => (
+                <Tag
+                  key={tag.Id}
+                  text={tag.Tag}
+                  colorClass={getTagColor(tag.Tag)}
+                />
+              ))
+            ) : (
+              <span>Add Message Tags</span>
+            )}
             {message.Tags.length > 6 && (
               <span className='text-gray-500'>
                 +{message.Tags.length - 6} more
@@ -45,12 +67,7 @@ const TableRow: React.FC<TableRowProps> = ({ message }) => {
           </div>
         </td>
       </tr>
-      <MessageCard
-        open={open}
-        setOpen={setOpen}
-        message={message.Message}
-        tags={message.Tags}
-      />
+      <MessageCard open={open} setOpen={setOpen} message={message} />
     </>
   );
 };

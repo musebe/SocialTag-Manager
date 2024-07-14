@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 
+interface Tag {
+    Id: string;
+    Created: string;
+    Tag: string;
+    LastUsedDate: string;
+}
+
 const useFetchTags = () => {
-    const [tags, setTags] = useState<string[]>([]);
+    const [tags, setTags] = useState<Tag[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {

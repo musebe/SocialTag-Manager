@@ -1,16 +1,23 @@
+// src/components/table/MessagesTable.tsx
+
 import React from 'react';
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
+import { Message } from '@/types';
 
 interface MessagesTableProps {
-  messages: any[];
-  selectedNetwork: string; // Add selectedNetwork to the props
+  messages: Message[];
+  selectedNetwork: string;
 }
 
 const MessagesTable: React.FC<MessagesTableProps> = ({
   messages,
   selectedNetwork,
 }) => {
+  const filteredMessages = messages.filter(
+    (message) => message.Network === selectedNetwork
+  );
+
   return (
     <div className='flex justify-center items-start w-full mt-24'>
       <div className='px-4 sm:px-6 lg:px-8 w-full max-w-7xl'>
@@ -32,7 +39,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
                 <table className='min-w-full divide-y divide-gray-300'>
                   <TableHeader />
                   <tbody className='divide-y divide-gray-200 bg-white'>
-                    {messages.map((message) => (
+                    {filteredMessages.map((message) => (
                       <TableRow key={message.Id} message={message} />
                     ))}
                   </tbody>
