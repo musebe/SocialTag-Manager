@@ -1,15 +1,10 @@
 import React, { useState } from 'react';
 import Tag from './Tag';
 import MessageCard from './MessageCard';
+import { Message } from '@/types'; // Ensure this import points to your correct types file
 
 interface TableRowProps {
-  message: {
-    Id: string;
-    Created: string;
-    Network: string;
-    Message: string;
-    Tags: { Id: string; Tag: string }[];
-  };
+  message: Message;
 }
 
 const TableRow: React.FC<TableRowProps> = ({ message }) => {
@@ -24,8 +19,7 @@ const TableRow: React.FC<TableRowProps> = ({ message }) => {
     'bg-gray-100 text-gray-800',
   ];
 
-  const getTagColor = (tag: string) => {
-    const index = colors.length; // A simplified version to just cycle through colors
+  const getTagColor = (index: number) => {
     return colors[index % colors.length];
   };
 
@@ -49,11 +43,11 @@ const TableRow: React.FC<TableRowProps> = ({ message }) => {
         <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>
           <div className='flex flex-wrap gap-1'>
             {message.Tags.length > 0 ? (
-              message.Tags.slice(0, 6).map((tag) => (
+              message.Tags.slice(0, 6).map((tag, index) => (
                 <Tag
                   key={tag.Id}
                   text={tag.Tag}
-                  colorClass={getTagColor(tag.Tag)}
+                  colorClass={getTagColor(index)}
                 />
               ))
             ) : (

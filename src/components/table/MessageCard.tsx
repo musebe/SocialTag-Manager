@@ -12,17 +12,12 @@ import Tag from './Tag';
 import useFetchTags from '@/app/hooks/useFetchTags';
 import useUpdateMessageTags from '@/app/hooks/useUpdateMessageTags';
 import { useToast } from '@/app/hooks/useToast';
+import { Message, Tag as TagType } from '@/types'; // Ensure this import is correct to link with your types
 
 interface MessageCardProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  message: {
-    Id: string;
-    Created: string;
-    Network: string;
-    Message: string;
-    Tags: { Id: string; Tag: string }[];
-  };
+  message: Message;
 }
 
 const MessageCard: React.FC<MessageCardProps> = ({
@@ -36,10 +31,19 @@ const MessageCard: React.FC<MessageCardProps> = ({
     success,
     error: updateTagsError,
   } = useUpdateMessageTags();
-  const [selectedTags, setSelectedTags] = useState<
-    { Id: string; Tag: string }[]
-  >(message.Tags);
+  const [selectedTags, setSelectedTags] = useState<TagType[]>(message.Tags);
   const { showSuccess, showError } = useToast();
+
+  useEffect(() => {
+    if (success) {
+      showSuccess('Tags updated successfully');
+    }
+    if (fetchTagsError || updateTagsError) {
+      showError(
+        fetchTagsError || updateTagsError || 'An unknown error occurred.'
+      );
+    }
+  }, [success, fetchTagsError, updateTagsError, showSuccess, showError]);
 
   const colors = [
     'bg-green-100 text-green-800',
@@ -55,22 +59,13 @@ const MessageCard: React.FC<MessageCardProps> = ({
     tagColorMapping[tag.Id] = colors[index % colors.length];
   });
 
-  useEffect(() => {
-    if (success) {
-      showSuccess('Tags updated successfully');
-    }
-    if (updateTagsError) {
-      showError(updateTagsError);
-    }
-  }, [success, updateTagsError, showSuccess, showError]);
-
-  const handleAddTag = (tag: { Id: string; Tag: string }) => {
+  const handleAddTag = (tag: TagType) => {
     if (!selectedTags.some((t) => t.Id === tag.Id)) {
       setSelectedTags([...selectedTags, tag]);
     }
   };
 
-  const handleRemoveTag = (tag: { Id: string; Tag: string }) => {
+  const handleRemoveTag = (tag: TagType) => {
     setSelectedTags(selectedTags.filter((t) => t.Id !== tag.Id));
   };
 
@@ -80,25 +75,24 @@ const MessageCard: React.FC<MessageCardProps> = ({
   };
 
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-
-  const formattedMessage = message.Message
-    ? message.Message.split(urlRegex).map((part, index) => {
-        if (urlRegex.test(part)) {
-          return (
-            <a
-              key={index}
-              href={part}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-blue-500 hover:underline'
-            >
-              {part}
-            </a>
-          );
-        }
-        return <span key={index}>{part} </span>;
-      })
-    : 'N/A';
+  const formattedMessage = message.Message.split(urlRegex).map(
+    (part, index) => {
+      if (urlRegex.test(part)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='text-blue-500 hover:underline'
+          >
+            {part}
+          </a>
+        );
+      }
+      return <span key={index}>{part}</span>;
+    }
+  );
 
   const isLongMessage = message.Message.split(' ').length > 150;
 
@@ -144,9 +138,6 @@ const MessageCard: React.FC<MessageCardProps> = ({
           <Button onClick={handleUpdateTags}>Update Tags</Button>
           <Button onClick={() => setOpen(false)}>Close</Button>
         </div>
-        {fetchTagsError && (
-          <p className='mt-4 text-red-500'>{fetchTagsError}</p>
-        )}
       </DialogContent>
     </Dialog>
   );
