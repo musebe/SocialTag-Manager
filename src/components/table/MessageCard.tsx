@@ -1,87 +1,77 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import Tag from './Tag';
 import useFetchTags from '@/app/hooks/useFetchTags';
 import useUpdateMessageTags from '@/app/hooks/useUpdateMessageTags';
 import { useToast } from '@/app/hooks/useToast';
-import { Message, Tag as TagType } from '@/types'; // Ensure this import is correct to link with your types
+import { Message, Tag as TagType } from '@/types';
 
 interface MessageCardProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   message: Message;
+  updateMessage: (updatedMessage: Message) => void;
 }
 
 const MessageCard: React.FC<MessageCardProps> = ({
   open,
   setOpen,
   message,
+  updateMessage,
 }) => {
-  const { tags: allTags, error: fetchTagsError } = useFetchTags();
-  const { updateMessageTags } = useUpdateMessageTags();
+  const { tags: allTags } = useFetchTags();
+  const { updateMessageTags, success, error } = useUpdateMessageTags();
   const [selectedTags, setSelectedTags] = useState<TagType[]>(message.Tags);
   const { showSuccess, showError } = useToast();
 
   useEffect(() => {
-    if (fetchTagsError) {
-      showError(fetchTagsError || 'An unknown error occurred.');
+    if (success) {
+      showSuccess('Tags updated successfully');
+      updateMessage({ ...message, Tags: selectedTags });
+      setOpen(false);
     }
-  }, [fetchTagsError, showError]);
-
-  const colors = [
-    'bg-green-100 text-green-800',
-    'bg-yellow-100 text-yellow-800',
-    'bg-blue-100 text-blue-800',
-    'bg-purple-100 text-purple-800',
-    'bg-red-100 text-red-800',
-    'bg-gray-100 text-gray-800',
-  ];
-
-  const tagColorMapping: { [key: string]: string } = {};
-  allTags.forEach((tag, index) => {
-    tagColorMapping[tag.Id] = colors[index % colors.length];
-  });
-
-  const handleAddTag = (tag: TagType) => {
-    if (!selectedTags.some((t) => t.Id === tag.Id)) {
-      setSelectedTags([...selectedTags, tag]);
+    if (error) {
+      showError(error);
     }
-  };
+  }, [success, error]); // Reducing dependencies to minimize re-renders
 
-  const handleRemoveTag = (tag: TagType) => {
-    setSelectedTags(selectedTags.filter((t) => t.Id !== tag.Id));
-  };
+  const handleAddTag = useCallback((tag: TagType) => {
+    setSelectedTags((prev) => [...prev, tag]);
+  }, []);
 
-  const handleUpdateTags = () => {
+  const handleRemoveTag = useCallback((tag: TagType) => {
+    setSelectedTags((prev) => prev.filter((t) => t.Id !== tag.Id));
+  }, []);
+
+  const handleUpdateTags = useCallback(() => {
     const tagIds = selectedTags.map((tag) => tag.Id);
-    updateMessageTags(message.Id, tagIds, (success, error) => {
-      if (success) {
-        setOpen(false);
-        showSuccess('Tags updated successfully');
-      } else {
-        showError(error || 'An error occurred during the update.');
-      }
-    });
-  };
+    updateMessageTags(message.Id, tagIds);
+  }, [selectedTags, message.Id, updateMessageTags]);
 
-  const formattedMessage = message.Message.split(' ').map((part, index) => (
-    <span key={index}>{part} </span>
-  ));
-
-  const isLongMessage = message.Message.split(' ').length > 150;
+  const getTagColor = useCallback((index) => {
+    const colors = [
+      'bg-green-100',
+      'bg-yellow-100',
+      'bg-blue-100',
+      'bg-purple-100',
+      'bg-red-100',
+      'bg-gray-100',
+    ];
+    return colors[index % colors.length] + ' text-gray-800';
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className='hidden' />
+        <button className='hidden'></button>
       </DialogTrigger>
       <DialogContent className='p-6 bg-white rounded-lg shadow-lg w-full max-w-4xl mx-auto'>
         <DialogHeader>
@@ -89,43 +79,39 @@ const MessageCard: React.FC<MessageCardProps> = ({
             Message Details
           </DialogTitle>
           <DialogDescription asChild>
-            <div
-              className={`mt-2 text-sm text-gray-700 ${
-                isLongMessage ? 'max-h-60 overflow-y-auto' : ''
-              }`}
-            >
-              {formattedMessage}
+            <div className='mt-2 text-sm text-gray-700'>
+              {message.Message.split(' ').map((part, index) =>
+                part.match(/https?:\/\//) ? (
+                  <a
+                    key={index}
+                    href={part}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='text-blue-500 hover:underline'
+                  >
+                    {part}
+                  </a>
+                ) : (
+                  <span key={index}>{part} </span>
+                )
+              )}
             </div>
           </DialogDescription>
         </DialogHeader>
         <div className='mt-4'>
           <h3 className='text-md font-medium'>Available Tags</h3>
           <div className='flex flex-wrap gap-2 mt-2 max-h-32 overflow-y-auto'>
-            {allTags.map((tag) => (
-              <Button
-                key={tag.Id}
-                onClick={() => handleAddTag(tag)}
-                className='text-md'
-              >
-                <Tag
-                  text={tag.Tag ?? 'Default Tag'}
-                  colorClass={tagColorMapping[tag.Id]}
-                />
+            {allTags.map((tag, index) => (
+              <Button key={tag.Id} onClick={() => handleAddTag(tag)}>
+                <Tag text={tag.Tag} colorClass={getTagColor(index)} />
               </Button>
             ))}
           </div>
           <h3 className='text-md font-medium mt-4'>Selected Tags</h3>
           <div className='flex flex-wrap gap-2 mt-2'>
-            {selectedTags.map((tag) => (
-              <button
-                key={tag.Id}
-                onClick={() => handleRemoveTag(tag)}
-                className='text-md'
-              >
-                <Tag
-                  text={tag.Tag ?? 'Default Tag'}
-                  colorClass={tagColorMapping[tag.Id]}
-                />
+            {selectedTags.map((tag, index) => (
+              <button key={tag.Id} onClick={() => handleRemoveTag(tag)}>
+                <Tag text={tag.Tag} colorClass={getTagColor(index)} />
               </button>
             ))}
           </div>

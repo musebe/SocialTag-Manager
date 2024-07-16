@@ -1,5 +1,3 @@
-// src/components/table/MessagesTable.tsx
-
 import React from 'react';
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
@@ -8,11 +6,13 @@ import { Message } from '@/types';
 interface MessagesTableProps {
   messages: Message[];
   selectedNetwork: string;
+  updateMessage: (message: Message) => void; // Ensure this prop is passed down for updating messages
 }
 
 const MessagesTable: React.FC<MessagesTableProps> = ({
   messages,
   selectedNetwork,
+  updateMessage,
 }) => {
   const filteredMessages = messages.filter(
     (message) => message.Network === selectedNetwork
@@ -40,7 +40,11 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
                   <TableHeader />
                   <tbody className='divide-y divide-gray-200 bg-white'>
                     {filteredMessages.map((message) => (
-                      <TableRow key={message.Id} message={message} />
+                      <TableRow
+                        key={message.Id}
+                        message={message}
+                        updateMessage={updateMessage}
+                      />
                     ))}
                   </tbody>
                 </table>

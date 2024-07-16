@@ -5,6 +5,7 @@ interface Tag {
     Created: string;
     Tag: string;
     LastUsedDate: string;
+    Color: string;  // Ensure this property is included in the interface
 }
 
 const useFetchTags = () => {
@@ -17,7 +18,11 @@ const useFetchTags = () => {
                 const response = await fetch('/api/oktopost/fetchTags');
                 const data = await response.json();
                 if (response.ok) {
-                    setTags(data);
+                    const tagsWithColor = data.map((tag: Tag) => ({  // Explicitly typing `tag` as `Tag`
+                        ...tag,
+                        Color: tag.Color || 'default-color'  // Adding a default color if missing
+                    }));
+                    setTags(tagsWithColor);
                 } else {
                     setError(data.error);
                 }

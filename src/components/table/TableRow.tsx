@@ -1,13 +1,15 @@
+// src/components/table/TableRow.tsx
 import React, { useState } from 'react';
 import Tag from './Tag';
 import MessageCard from './MessageCard';
-import { Message } from '@/types'; // Ensure this import points to your correct types file
+import { Message } from '@/types';
 
 interface TableRowProps {
   message: Message;
+  updateMessage: (updatedMessage: Message) => void;
 }
 
-const TableRow: React.FC<TableRowProps> = ({ message }) => {
+const TableRow: React.FC<TableRowProps> = ({ message, updateMessage }) => {
   const [open, setOpen] = useState(false);
 
   const colors = [
@@ -19,9 +21,7 @@ const TableRow: React.FC<TableRowProps> = ({ message }) => {
     'bg-gray-100 text-gray-800',
   ];
 
-  const getTagColor = (index: number) => {
-    return colors[index % colors.length];
-  };
+  const getTagColor = (index: number) => colors[index % colors.length];
 
   return (
     <>
@@ -42,17 +42,13 @@ const TableRow: React.FC<TableRowProps> = ({ message }) => {
         </td>
         <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>
           <div className='flex flex-wrap gap-1'>
-            {message.Tags.length > 0 ? (
-              message.Tags.slice(0, 6).map((tag, index) => (
-                <Tag
-                  key={tag.Id}
-                  text={tag.Tag}
-                  colorClass={getTagColor(index)}
-                />
-              ))
-            ) : (
-              <span>Add Message Tags</span>
-            )}
+            {message.Tags.slice(0, 6).map((tag, index) => (
+              <Tag
+                key={tag.Id}
+                text={tag.Tag}
+                colorClass={getTagColor(index)}
+              />
+            ))}
             {message.Tags.length > 6 && (
               <span className='text-gray-500'>
                 +{message.Tags.length - 6} more
@@ -61,7 +57,12 @@ const TableRow: React.FC<TableRowProps> = ({ message }) => {
           </div>
         </td>
       </tr>
-      <MessageCard open={open} setOpen={setOpen} message={message} />
+      <MessageCard
+        open={open}
+        setOpen={setOpen}
+        message={message}
+        updateMessage={updateMessage}
+      />
     </>
   );
 };
