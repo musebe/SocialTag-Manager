@@ -4,7 +4,7 @@ const useUpdateMessageTags = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean>(false);
 
-    const updateMessageTags = async (id: string, tags: string[]) => {
+    const updateMessageTags = async (id: string, tags: string[], callback: (success: boolean, error?: string) => void) => {
         try {
             const response = await fetch('/api/oktopost/updateMessageTags', {
                 method: 'POST',
@@ -16,14 +16,18 @@ const useUpdateMessageTags = () => {
             const data = await response.json();
             if (response.ok) {
                 setSuccess(true);
+                callback(true);
             } else {
                 setError(data.error);
+                callback(false, data.error);
             }
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message);
+                callback(false, err.message);
             } else {
                 setError('An unknown error occurred');
+                callback(false, 'An unknown error occurred');
             }
         }
     };

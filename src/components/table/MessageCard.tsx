@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import Tag from './Tag';
@@ -26,24 +26,15 @@ const MessageCard: React.FC<MessageCardProps> = ({
   message,
 }) => {
   const { tags: allTags, error: fetchTagsError } = useFetchTags();
-  const {
-    updateMessageTags,
-    success,
-    error: updateTagsError,
-  } = useUpdateMessageTags();
+  const { updateMessageTags } = useUpdateMessageTags();
   const [selectedTags, setSelectedTags] = useState<TagType[]>(message.Tags);
   const { showSuccess, showError } = useToast();
 
   useEffect(() => {
-    if (success) {
-      showSuccess('Tags updated successfully');
+    if (fetchTagsError) {
+      showError(fetchTagsError || 'An unknown error occurred.');
     }
-    if (fetchTagsError || updateTagsError) {
-      showError(
-        fetchTagsError || updateTagsError || 'An unknown error occurred.'
-      );
-    }
-  }, [success, fetchTagsError, updateTagsError, showSuccess, showError]);
+  }, [fetchTagsError, showError]);
 
   const colors = [
     'bg-green-100 text-green-800',
@@ -71,28 +62,19 @@ const MessageCard: React.FC<MessageCardProps> = ({
 
   const handleUpdateTags = () => {
     const tagIds = selectedTags.map((tag) => tag.Id);
-    updateMessageTags(message.Id, tagIds);
+    updateMessageTags(message.Id, tagIds, (success, error) => {
+      if (success) {
+        setOpen(false);
+        showSuccess('Tags updated successfully');
+      } else {
+        showError(error || 'An error occurred during the update.');
+      }
+    });
   };
 
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const formattedMessage = message.Message.split(urlRegex).map(
-    (part, index) => {
-      if (urlRegex.test(part)) {
-        return (
-          <a
-            key={index}
-            href={part}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='text-blue-500 hover:underline'
-          >
-            {part}
-          </a>
-        );
-      }
-      return <span key={index}>{part}</span>;
-    }
-  );
+  const formattedMessage = message.Message.split(' ').map((part, index) => (
+    <span key={index}>{part} </span>
+  ));
 
   const isLongMessage = message.Message.split(' ').length > 150;
 
@@ -120,16 +102,30 @@ const MessageCard: React.FC<MessageCardProps> = ({
           <h3 className='text-md font-medium'>Available Tags</h3>
           <div className='flex flex-wrap gap-2 mt-2 max-h-32 overflow-y-auto'>
             {allTags.map((tag) => (
-              <Button key={tag.Id} onClick={() => handleAddTag(tag)}>
-                <Tag text={tag.Tag} colorClass={tagColorMapping[tag.Id]} />
+              <Button
+                key={tag.Id}
+                onClick={() => handleAddTag(tag)}
+                className='text-md'
+              >
+                <Tag
+                  text={tag.Tag ?? 'Default Tag'}
+                  colorClass={tagColorMapping[tag.Id]}
+                />
               </Button>
             ))}
           </div>
           <h3 className='text-md font-medium mt-4'>Selected Tags</h3>
           <div className='flex flex-wrap gap-2 mt-2'>
             {selectedTags.map((tag) => (
-              <button key={tag.Id} onClick={() => handleRemoveTag(tag)}>
-                <Tag text={tag.Tag} colorClass={tagColorMapping[tag.Id]} />
+              <button
+                key={tag.Id}
+                onClick={() => handleRemoveTag(tag)}
+                className='text-md'
+              >
+                <Tag
+                  text={tag.Tag ?? 'Default Tag'}
+                  colorClass={tagColorMapping[tag.Id]}
+                />
               </button>
             ))}
           </div>
