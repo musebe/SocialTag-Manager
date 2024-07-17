@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 const useUpdateMessageTags = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean>(false);
 
-    const updateMessageTags = async (id: string, tags: string[], callback?: (success: boolean, error?: string) => void) => {
+    const updateMessageTags = useCallback(async (id: string, tags: string[]) => {
+        setError(null);  // Reset error state on new request
+        setSuccess(false);  // Reset success state on new request
         try {
             const response = await fetch('/api/oktopost/updateMessageTags', {
                 method: 'POST',
@@ -16,19 +18,15 @@ const useUpdateMessageTags = () => {
             const data = await response.json();
             if (response.ok) {
                 setSuccess(true);
-                if (callback) callback(true);
             } else {
-                setError(data.error);
-                if (callback) callback(false, data.error);
+                setError(data.error || 'Failed to update tags');
             }
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-            setError(errorMessage);
-            if (callback) callback(false, errorMessage);
+            setError(err instanceof Error ? err.message : 'An unknown error occurred');
         }
-    };
+    }, []);
 
-    return { updateMessageTags, success, error };
+    return { updateMessageTags, success, error, setError, setSuccess };
 };
 
 export default useUpdateMessageTags;

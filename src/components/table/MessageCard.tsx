@@ -28,7 +28,8 @@ const MessageCard: React.FC<MessageCardProps> = ({
   updateMessage,
 }) => {
   const { tags: allTags } = useFetchTags();
-  const { updateMessageTags, success, error } = useUpdateMessageTags();
+  const { updateMessageTags, success, error, setError, setSuccess } =
+    useUpdateMessageTags();
   const [selectedTags, setSelectedTags] = useState<TagType[]>(message.Tags);
   const { showSuccess, showError } = useToast();
 
@@ -37,11 +38,24 @@ const MessageCard: React.FC<MessageCardProps> = ({
       showSuccess('Tags updated successfully');
       updateMessage({ ...message, Tags: selectedTags });
       setOpen(false);
+      setSuccess(false); // Reset success to avoid re-triggering
     }
     if (error) {
       showError(error);
+      setError(null); // Clear error to avoid re-triggering
     }
-  }, [success, error]); // Reducing dependencies to minimize re-renders
+  }, [
+    success,
+    error,
+    message,
+    selectedTags,
+    updateMessage,
+    setOpen,
+    showSuccess,
+    showError,
+    setSuccess,
+    setError,
+  ]);
 
   const handleAddTag = useCallback((tag: TagType) => {
     setSelectedTags((prev) => [...prev, tag]);
@@ -56,7 +70,7 @@ const MessageCard: React.FC<MessageCardProps> = ({
     updateMessageTags(message.Id, tagIds);
   }, [selectedTags, message.Id, updateMessageTags]);
 
-  const getTagColor = useCallback((index) => {
+  const getTagColor = useCallback((index: number) => {
     const colors = [
       'bg-green-100',
       'bg-yellow-100',
